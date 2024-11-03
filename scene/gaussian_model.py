@@ -45,6 +45,7 @@ class GaussianModel:
         self.active_sh_degree = 0
         self.max_sh_degree = sh_degree  
         self._xyz = torch.empty(0)
+        self._xyz_diff = torch.empty(0)
         self._features_dc = torch.empty(0)
         self._features_rest = torch.empty(0)
         self._scaling = torch.empty(0)
@@ -62,6 +63,7 @@ class GaussianModel:
         return (
             self.active_sh_degree,
             self._xyz,
+            # self._xyz_diff,
             self._features_dc,
             self._features_rest,
             self._scaling,
@@ -77,6 +79,7 @@ class GaussianModel:
     def restore(self, model_args, training_args):
         (self.active_sh_degree, 
         self._xyz, 
+        # self._xyz_diff,
         self._features_dc, 
         self._features_rest,
         self._scaling, 
@@ -131,6 +134,7 @@ class GaussianModel:
 
         print("Number of points at initialisation : ", fused_point_cloud.shape[0])
 
+        # initialize gaussian
         dist2 = torch.clamp_min(distCUDA2(torch.from_numpy(np.asarray(pcd.points)).float().cuda()), 0.0000001)
         scales = torch.log(torch.sqrt(dist2))[...,None].repeat(1, 3)
         rots = torch.zeros((fused_point_cloud.shape[0], 4), device="cuda")
@@ -139,6 +143,7 @@ class GaussianModel:
         opacities = inverse_sigmoid(0.1 * torch.ones((fused_point_cloud.shape[0], 1), dtype=torch.float, device="cuda"))
 
         self._xyz = nn.Parameter(fused_point_cloud.requires_grad_(True))
+        # self._xyz_diff = torch.zeros((fused_point_cloud.shpae[0]), device='cuda')
         self._features_dc = nn.Parameter(features[:,:,0:1].transpose(1, 2).contiguous().requires_grad_(True))
         self._features_rest = nn.Parameter(features[:,:,1:].transpose(1, 2).contiguous().requires_grad_(True))
         self._scaling = nn.Parameter(scales.requires_grad_(True))

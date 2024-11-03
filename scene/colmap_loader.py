@@ -80,6 +80,22 @@ def read_next_bytes(fid, num_bytes, format_char_sequence, endian_character="<"):
     data = fid.read(num_bytes)
     return struct.unpack(endian_character + format_char_sequence, data)
 
+def random_points3D(num_points, x_limits, y_limits, z_limits):
+    # Generate random X coordinates within the specified range
+    x_coords = np.random.uniform(x_limits[0], x_limits[1], num_points)
+    # Generate random Y coordinates within the specified range
+    y_coords = np.random.uniform(y_limits[0], y_limits[1], num_points)
+    # Generate random Z coordinates within the specified range
+    z_coords = np.random.uniform(z_limits[0], z_limits[1], num_points)
+    
+    # Stack X, Y, Z coordinates to form XYZ array
+    xyzs = np.column_stack((x_coords, y_coords, z_coords))
+    
+    # Generate random RGB values in the range [0, 255]
+    rgbs = np.random.randint(0, 256, (num_points, 3))
+    
+    return xyzs, rgbs
+
 def read_points3D_text(path):
     """
     see: src/base/reconstruction.cc
@@ -168,7 +184,7 @@ def read_intrinsics_text(path):
                 elems = line.split()
                 camera_id = int(elems[0])
                 model = elems[1]
-                assert model == "PINHOLE", "While the loader support other types, the rest of the code assumes PINHOLE"
+                # assert model == "PINHOLE", "While the loader support other types, the rest of the code assumes PINHOLE"
                 width = int(elems[2])
                 height = int(elems[3])
                 params = np.array(tuple(map(float, elems[4:])))
